@@ -85,7 +85,7 @@ void extractOBJdata(string fp, float positions[][3], float texels[][2], float no
         getline(inOBJ, line);
         string type = line.substr(0,2);
         
-        // Positions
+        // Vertices
         if(type.compare("v ") == 0)
         {
             // Copy line for parsing
@@ -102,7 +102,7 @@ void extractOBJdata(string fp, float positions[][3], float texels[][2], float no
             p++;
         }
         
-        // Texels
+        // Texture Coordinates
         else if(type.compare("vt") == 0)
         {
             char* l = new char[line.size()+1];
@@ -190,8 +190,8 @@ void writeH(string fp, string name, Model model)
     // Write struct declaration
     outH << "struct " << structType(name) << " {" << endl;
     outH << "    const int numVertices;" << endl;
-    outH << "    const float positions[" << model.vertices << "][3];" << endl;
-    outH << "    const float texels[" << model.vertices << "][2];" << endl;
+    outH << "    const float vertices[" << model.vertices << "][3];" << endl;
+    outH << "    const float textureCoordinates[" << model.vertices << "][2];" << endl;
     outH << "    const float normals[" << model.vertices << "][3];" << endl;
     outH << "};" << endl;
     outH << endl;
@@ -235,7 +235,7 @@ void writeCpositions(string fp, string name, Model model, int faces[][9], float 
     outC.open(fp, ios::app);
     
     // Positions
-    outC << "    .positions = {" << endl;
+    outC << "    .vertices = {" << endl;
     for(int i = 0; i < model.faces; i++)
     {
         int vA = faces[i][0] - 1;
@@ -259,16 +259,17 @@ void writeCtexels(string fp, string name, Model model, int faces[][9], float tex
     outC.open(fp, ios::app);
     
     // Texels
-    outC << "    .texels = {" << endl;
+    outC << "    .textureCoordinates = {" << endl;
     for(int i = 0; i < model.faces; i++)
     {
         int vtA = faces[i][1] - 1;
         int vtB = faces[i][4] - 1;
         int vtC = faces[i][7] - 1;
         
-        outC << "        {" << texels[vtA][0] << ", " << texels[vtA][1] << "}, " << endl;
-        outC << "        {" << texels[vtB][0] << ", " << texels[vtB][1] << "}, " << endl;
-        outC << "        {" << texels[vtC][0] << ", " << texels[vtC][1] << "}, " << endl;
+        // Note that the Y coordinate is inverted as OpenGL requires that (alternatively you could vertically flip the image)
+        outC << "        {" << texels[vtA][0] << ", " << (1.0 - texels[vtA][1]) << "}, " << endl;
+        outC << "        {" << texels[vtB][0] << ", " << (1.0 - texels[vtB][1]) << "}, " << endl;
+        outC << "        {" << texels[vtC][0] << ", " << (1.0 - texels[vtC][1]) << "}, " << endl;
     }
     outC << "    }," << endl;
     
